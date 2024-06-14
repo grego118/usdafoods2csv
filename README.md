@@ -27,7 +27,7 @@ cd usdafoods2csv
 ## Usage
 
 ```
-usage: usdafoods2csv.py [-h] [-o OUTPUT_FILE] input_file
+usage: usdafoods2csv.py [-h] [-o OUTPUT_FILE] input_file [input_file ...]
 
 Processes USDA FDC data and outputs a CSV of simplified nutrition facts. Only Foundation and SR Legacy JSON data sets are supported.
 
@@ -43,14 +43,14 @@ options:
 To process a data set and generate a CSV file:
 
 ```bash
-python usdafoods2csv.py path/to/fdc_data.json -o nutrition_data.csv
+python usdafoods2csv.py -o nutrition_data.csv path/to/fdc_data.json
 ```
 
 This will create a `nutrition_data.csv` file in the current directory. The most recent data sets may be downloaded from the [FDC download page](https://fdc.nal.usda.gov/download-datasets.html). At the time of writing, the USDA updates the Foundation data set twice per year.
 
 ## CSV Output Format
 
-The generated CSV file has the following columns:
+The generated CSV data has the following columns:
 
 - `name`: Food name
 - `weight_g`: Weight in grams
@@ -62,4 +62,4 @@ The generated CSV file has the following columns:
 - `sugars_g`: Total sugars in grams
 - `protein_g`: Protein in grams
 
-The records are sorted by `name` in ascending order.
+The records are sorted by `name` in ascending order. If multiple input files are provided, the results will be combined into a single CSV output.

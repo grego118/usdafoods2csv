@@ -162,16 +162,17 @@ class Food:
         return [self.name, self.weight, self.volume] + self.macros.as_list()
 
 
-def main(input_file, output_file):
-    with open(input_file, 'r') as f:
-        all_food_data = json.load(f)
-
+def main(input_files, output_file):
     foods = []
-    if 'FoundationFoods' in all_food_data:
-        foods.extend(Food('Foundation', f) for f in all_food_data['FoundationFoods'])
+    for input_file in input_files:
+        with open(input_file, 'r') as f:
+            all_food_data = json.load(f)
 
-    if 'SRLegacyFoods' in all_food_data:
-        foods.extend(Food('SR Legacy', f) for f in all_food_data['SRLegacyFoods'])
+        if 'FoundationFoods' in all_food_data:
+            foods.extend(Food('Foundation', f) for f in all_food_data['FoundationFoods'])
+
+        if 'SRLegacyFoods' in all_food_data:
+            foods.extend(Food('SR Legacy', f) for f in all_food_data['SRLegacyFoods'])
 
     foods.sort()
 
@@ -194,7 +195,7 @@ if __name__ == '__main__':
     parser = ArgumentParser(description=('Processes USDA FDC data and outputs a CSV of '
                                          'simplified nutrition facts. Only Foundation and SR '
                                          'Legacy JSON data sets are supported.'))
-    parser.add_argument('input_file', help='USDA FDC JSON data set to process')
+    parser.add_argument('input_file', nargs='+', help='USDA FDC JSON data set to process')
     parser.add_argument('-o', '--output-file', help='output file for CSV data (default: stdout)')
     args = parser.parse_args()
 
