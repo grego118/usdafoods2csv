@@ -79,6 +79,7 @@ class Macros:
             '957': NutrientMetadata('cals_atwater_general', NutrientCategory.CALORIES, 3),
             '958': NutrientMetadata('cals_atwater_specific', NutrientCategory.CALORIES, 4),
     }
+    CSV_HEADERS = ['calories_kcal', 'fat_g', 'carbs_g', 'fiber_g', 'sugars_g', 'protein_g']
 
     @classmethod
     def from_food_nutrients(cls, food_nutrients):
@@ -122,10 +123,13 @@ class Macros:
 
 
 class Food:
+    CSV_HEADERS = ['fdc_id', 'alt_name', 'description', 'weight_g', 'volume_ml'] + Macros.CSV_HEADERS
+
     def __init__(self, source, food_data):
         self.source = source
         self.fdc_id = food_data['fdcId']
-        self.name = food_data['description']
+        self.alt_name = None
+        self.description = food_data['description']
         self.weight = 100.0
         self.volume = None
 
@@ -152,17 +156,17 @@ class Food:
             self.macros = macros_per_100_g
 
     def __repr__(self):
-        return (f"Food(source='{self.source}', fdc_id={self.fdc_id}, name='{self.name}', "
-                f"weight={self.weight}, volume={self.volume}, macros={self.macros})")
+        return (f"Food(source='{self.source}', fdc_id={self.fdc_id}, alt_name='{self.alt_name}', "
+                f"description='{self.description}', weight={self.weight}, volume={self.volume}, macros={self.macros})")
 
     def __lt__(self, other):
-        return self.name < other.name
+        return self.description < other.description
 
     def nutrition_record(self):
-        return [self.name, self.weight, self.volume] + self.macros.as_list()
+        return [self.fdc_id, self.alt_name, self.description, self.weight, self.volume] + self.macros.as_list()
 
 
-def main(input_files, output_file):
+def main(input_files, output_file, alt_names_file):
     foods = []
     for input_file in input_files:
         with open(input_file, 'r') as f:
@@ -174,19 +178,24 @@ def main(input_files, output_file):
         if 'SRLegacyFoods' in all_food_data:
             foods.extend(Food('SR Legacy', f) for f in all_food_data['SRLegacyFoods'])
 
+    if alt_names_file is not None:
+        with open(alt_names_file, 'r') as f:
+            id_name_lookup = {int(k): v for k, v in json.load(f).items()}
+
+        for food in foods:
+            food.alt_name = id_name_lookup.get(food.fdc_id)
+
     foods.sort()
 
-    headers = ['name', 'weight_g', 'volume_ml',
-               'calories_kcal', 'fat_g', 'carbs_g', 'fiber_g', 'sugars_g', 'protein_g']
     if output_file is None:
         csv_writer = csv.writer(sys.stdout)
-        csv_writer.writerow(headers)
+        csv_writer.writerow(Food.CSV_HEADERS)
         for food in foods:
             csv_writer.writerow(food.nutrition_record())
     else:
         with open(output_file, 'w', newline='') as f:
             csv_writer = csv.writer(f)
-            csv_writer.writerow(headers)
+            csv_writer.writerow(Food.CSV_HEADERS)
             for food in foods:
                 csv_writer.writerow(food.nutrition_record())
 
@@ -197,6 +206,7 @@ if __name__ == '__main__':
                                          'Legacy JSON data sets are supported.'))
     parser.add_argument('input_file', nargs='+', help='USDA FDC JSON data set to process')
     parser.add_argument('-o', '--output-file', help='output file for CSV data (default: stdout)')
+    parser.add_argument('-a', '--alt-names', help='JSON file containing alternative food names')
     args = parser.parse_args()
 
-    main(args.input_file, args.output_file)
+    main(args.input_file, args.output_file, args.alt_names)

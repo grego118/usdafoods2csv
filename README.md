@@ -27,7 +27,7 @@ cd usdafoods2csv
 ## Usage
 
 ```
-usage: usdafoods2csv.py [-h] [-o OUTPUT_FILE] input_file [input_file ...]
+usage: usdafoods2csv.py [-h] [-o OUTPUT_FILE] [-a ALT_NAMES] input_file [input_file ...]
 
 Processes USDA FDC data and outputs a CSV of simplified nutrition facts. Only Foundation and SR Legacy JSON data sets are supported.
 
@@ -38,6 +38,8 @@ options:
   -h, --help            show this help message and exit
   -o OUTPUT_FILE, --output-file OUTPUT_FILE
                         output file for CSV data (default: stdout)
+  -a ALT_NAMES, --alt-names ALT_NAMES
+                        JSON file containing alternative food names
 ```
 
 To process a data set and generate a CSV file:
@@ -48,11 +50,34 @@ python usdafoods2csv.py -o nutrition_data.csv path/to/fdc_data.json
 
 This will create a `nutrition_data.csv` file in the current directory. The most recent data sets may be downloaded from the [FDC download page](https://fdc.nal.usda.gov/download-datasets.html). At the time of writing, the USDA updates the Foundation data set twice per year.
 
+## Alternative Food Names
+
+Provide a JSON file containing alternative names to complement the verbose descriptions provided by the USDA. The file must contain a single JSON object where each key is an FDC ID and each value is a string representing the alternative name.
+
+Example file contents:
+
+```json
+{
+  "321360": "grape tomatoes",
+  "321611": "canned green beans",
+  "323505": "kale",
+  "324653": "dill pickles",
+}
+```
+
+To use this file:
+
+```bash
+python usdafoods2csv.py -o nutrition_data.csv -a alt_names.json path/to/fdc_data.json
+```
+
 ## CSV Output Format
 
 The generated CSV data has the following columns:
 
-- `name`: Food name
+- `fdc_id`: Food identifier
+- `alt_name`: Alternative name (if provided)
+- `description`: Food description
 - `weight_g`: Weight in grams
 - `volume_ml`: Equivalent volume in milliliters (if available)
 - `calories_kcal`: Calories in kcal
@@ -62,4 +87,4 @@ The generated CSV data has the following columns:
 - `sugars_g`: Total sugars in grams
 - `protein_g`: Protein in grams
 
-The records are sorted by `name` in ascending order. If multiple input files are provided, the results will be combined into a single CSV output.
+The records are sorted by `description` in ascending order. If multiple input files are provided, the records are combined into a single CSV output.
