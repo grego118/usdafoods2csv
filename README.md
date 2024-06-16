@@ -1,4 +1,4 @@
-# USDA FDC Nutrition Data Processor
+# usdafoods2csv
 
 This Python script processes [USDA FoodData Central (FDC)](https://fdc.nal.usda.gov/index.html) nutrient data and generates a simple CSV file containing the available macronutrition facts for the foods.
 
@@ -61,11 +61,11 @@ Example file contents:
   "321360": "grape tomatoes",
   "321611": "canned green beans",
   "323505": "kale",
-  "324653": "dill pickles",
+  "324653": "dill pickles"
 }
 ```
 
-To use this file:
+To use:
 
 ```bash
 python usdafoods2csv.py -o nutrition_data.csv -a alt_names.json path/to/fdc_data.json
